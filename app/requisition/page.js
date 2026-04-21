@@ -4,13 +4,22 @@ import { useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { useNotification } from '@/components/NotificationProvider';
 import DataTable from '@/components/DataTable';
-import { Database, Edit3, Settings } from 'lucide-react';
+import { 
+  Database, 
+  Edit3, 
+  Settings, 
+  Package, 
+  Truck, 
+  DollarSign, 
+  CreditCard,
+  PlusCircle,
+  FileText
+} from 'lucide-react';
 
 export default function Requisition() {
   const { orders, addOrder, isHydrated, masterData } = useOrders();
   const { addNotification } = useNotification();
   
-  // SAP-like states: Stock Item vs Non-Stock (Free Text)
   const [isManualEntry, setIsManualEntry] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -45,7 +54,6 @@ export default function Requisition() {
       return;
     }
 
-    // SAP logic: Non-stock items MUST have a cost center
     if (isManualEntry && !formData.costCenter) {
       addNotification('Non-stock items require a Cost Center (Account Assignment K)', 'error');
       return;
@@ -58,7 +66,6 @@ export default function Requisition() {
     
     addNotification(`Requisition ${trId} created successfully`, 'success');
     
-    // Reset form
     setFormData({
       itemName: '',
       quantity: 1,
@@ -82,147 +89,207 @@ export default function Requisition() {
   const requestedItems = orders.filter(o => o.status === 'Requested');
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Purchase Requisition (ME51N)</h1>
-          <p className="text-gray-500">Create Stock or Non-Stock (Free-Text) requests.</p>
+    <div className="max-w-7xl mx-auto space-y-10 pb-20">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+              <FileText size={28} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create Requisition</h1>
+              <p className="text-gray-500 font-medium">Transaction Code: ME51N</p>
+            </div>
+          </div>
         </div>
         
-        <div className="flex bg-gray-200 p-1 rounded-lg">
+        <div className="inline-flex p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl border border-gray-200">
           <button 
             onClick={() => { setIsManualEntry(false); setFormData({...formData, itemName: '', price: 0, costCenter: ''}); }}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-all ${!isManualEntry ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${!isManualEntry ? 'bg-white shadow-md text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            <Database size={14} />
-            Stock Item
+            <Database size={18} />
+            Stock Material
           </button>
           <button 
             onClick={() => { setIsManualEntry(true); setFormData({...formData, itemName: '', price: 0}); }}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-all ${isManualEntry ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${isManualEntry ? 'bg-white shadow-md text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            <Edit3 size={14} />
-            Manual Entry
+            <Edit3 size={18} />
+            Free Text Entry
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-          <Settings size={16} />
-          {isManualEntry ? 'Non-Stock Purchase (Account Assignment K)' : 'Standard Material Purchase'}
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Item Selection/Input */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase">
-              {isManualEntry ? 'Description (Free Text)' : 'Material Master'}
-            </label>
-            {isManualEntry ? (
-              <input 
-                required
-                type="text"
-                placeholder="Enter service or item description..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                value={formData.itemName}
-                onChange={e => setFormData({...formData, itemName: e.target.value})}
-              />
-            ) : (
-              <select 
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white outline-none"
-                value={formData.itemName}
-                onChange={handleMaterialChange}
-              >
-                <option value="">-- Select from Master --</option>
-                {masterData.materials.map(m => (
-                  <option key={m.id} value={m.name}>{m.id} - {m.name}</option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-500 uppercase">Quantity</label>
-              <input 
-                required
-                type="number" 
-                min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                value={formData.quantity}
-                onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})}
-              />
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Section 1: Item Details */}
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-blue-50 text-blue-500 rounded-lg">
+                <Package size={20} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 tracking-tight">Item Details</h2>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-500 uppercase">Unit Price</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600 ml-1">
+                  {isManualEntry ? 'Description (Free Text)' : 'Select Material'}
+                </label>
+                {isManualEntry ? (
+                  <input 
+                    required
+                    type="text"
+                    placeholder="e.g., Office Supplies, Consulting Services..."
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                    value={formData.itemName}
+                    onChange={e => setFormData({...formData, itemName: e.target.value})}
+                  />
+                ) : (
+                  <select 
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                    value={formData.itemName}
+                    onChange={handleMaterialChange}
+                  >
+                    <option value="">-- Choose from Master Data --</option>
+                    {masterData.materials.map(m => (
+                      <option key={m.id} value={m.name}>{m.id} - {m.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600 ml-1">Quantity</label>
                 <input 
                   required
-                  readOnly={!isManualEntry}
                   type="number" 
-                  className={`w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none ${!isManualEntry ? 'bg-gray-50 text-gray-500' : ''}`}
-                  value={formData.price}
-                  onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+                  min="1"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                  value={formData.quantity}
+                  onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})}
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase">Vendor Master</label>
-            <select 
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white outline-none"
-              value={formData.vendor}
-              onChange={e => setFormData({...formData, vendor: e.target.value})}
-            >
-              <option value="">-- Select Vendor --</option>
-              {masterData.vendors.map(v => (
-                <option key={v.id} value={v.name}>{v.id} - {v.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Account Assignment Field (Only for Manual Entry) */}
-          <div className={`space-y-1 transition-all duration-300 ${isManualEntry ? 'opacity-100 scale-100' : 'opacity-30 grayscale pointer-events-none'}`}>
-            <label className="text-xs font-bold text-gray-500 uppercase">Account Assignment (Cost Center)</label>
-            <select 
-              required={isManualEntry}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white outline-none"
-              value={formData.costCenter}
-              onChange={e => setFormData({...formData, costCenter: e.target.value})}
-            >
-              <option value="">-- Assign to Dept --</option>
-              {masterData.costCenters.map(c => (
-                <option key={c.id} value={c.name}>{c.id} - {c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="lg:col-span-2 flex justify-end items-center gap-4">
-            <div className="text-right">
-              <p className="text-[10px] text-gray-400 font-bold uppercase">Estimated Total</p>
-              <p className="text-xl font-black text-blue-900">${(formData.price * formData.quantity).toLocaleString()}</p>
+          {/* Section 2: Vendor & Pricing */}
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+                <Truck size={20} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 tracking-tight">Vendor & Pricing</h2>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600 ml-1">Vendor Source</label>
+                <select 
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                  value={formData.vendor}
+                  onChange={e => setFormData({...formData, vendor: e.target.value})}
+                >
+                  <option value="">-- Select Vendor --</option>
+                  {masterData.vendors.map(v => (
+                    <option key={v.id} value={v.name}>{v.id} - {v.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600 ml-1">Net Unit Price</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                  <input 
+                    required
+                    readOnly={!isManualEntry}
+                    type="number" 
+                    step="0.01"
+                    className={`w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all ${!isManualEntry ? 'text-gray-500 cursor-not-allowed' : ''}`}
+                    value={formData.price}
+                    onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar: Account Assignment & Summary */}
+        <div className="space-y-8">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-amber-50 text-amber-500 rounded-lg">
+                <CreditCard size={20} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 tracking-tight">Assignment</h2>
+            </div>
+            
+            <div className={`space-y-4 transition-all duration-500 ${isManualEntry ? 'opacity-100 translate-y-0' : 'opacity-40 grayscale pointer-events-none -translate-y-2'}`}>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600 ml-1">Cost Center (Account K)</label>
+                <select 
+                  required={isManualEntry}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                  value={formData.costCenter}
+                  onChange={e => setFormData({...formData, costCenter: e.target.value})}
+                >
+                  <option value="">-- Assign Dept --</option>
+                  {masterData.costCenters.map(c => (
+                    <option key={c.id} value={c.name}>{c.id} - {c.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-gray-400 px-1">Required for non-stock items</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-xl shadow-blue-200 text-white space-y-8">
+            <div className="space-y-1">
+              <h3 className="text-blue-100 text-sm font-bold uppercase tracking-wider">Estimated Total</h3>
+              <p className="text-4xl font-black tabular-nums">
+                ${(formData.price * formData.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+            
             <button 
               type="submit"
-              className="px-10 py-3 bg-blue-600 text-white rounded-lg font-black hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+              className="w-full py-4 bg-white text-blue-700 rounded-2xl font-black text-lg hover:bg-blue-50 transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              SAVE REQUISITION
+              <PlusCircle size={22} />
+              Save Requisition
             </button>
+            
+            <p className="text-xs text-blue-200 text-center font-medium">
+              System will generate a unique PR ID upon successful validation.
+            </p>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
 
-      <div>
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Requisition Register (PR Items)</h2>
-        <DataTable 
-          columns={columns} 
-          data={requestedItems} 
-        />
+      {/* Register Section */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-900 text-white rounded-lg">
+            <Settings size={20} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Requisition Register</h2>
+        </div>
+        
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <DataTable 
+            columns={columns} 
+            data={requestedItems} 
+          />
+        </div>
       </div>
     </div>
   );

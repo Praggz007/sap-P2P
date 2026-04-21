@@ -6,22 +6,22 @@ const STORAGE_KEY = 'sap_p2p_orders';
 
 export const MASTER_DATA = {
   vendors: [
-    { id: 'V100', name: 'Dell Technologies', terms: 'Net 30' },
-    { id: 'V200', name: 'Microsoft Corporation', terms: 'Net 15' },
-    { id: 'V300', name: 'Amazon Web Services', terms: 'Due on Receipt' },
-    { id: 'V400', name: 'Apple Inc.', terms: 'Net 45' },
+    { id: 'V101', name: 'Global Logistics Ltd', terms: 'Net 30' },
+    { id: 'V202', name: 'Office Solutions Inc.', terms: 'Net 15' },
+    { id: 'V303', name: 'Tech Prime Systems', terms: 'Due on Receipt' },
+    { id: 'V404', name: 'Industrial Parts Co.', terms: 'Net 45' },
   ],
   materials: [
-    { id: 'M001', name: 'Laptops - Latitude 5000', price: 1200 },
-    { id: 'M002', name: 'Cloud Server Instance', price: 500 },
-    { id: 'M003', name: 'Software License - ERP', price: 2500 },
-    { id: 'M004', name: 'Peripheral - Monitor 4K', price: 350 },
+    { id: 'M101', name: 'High-Speed Drill Bit Set', price: 85 },
+    { id: 'M102', name: 'Ergonomic Office Chair', price: 299 },
+    { id: 'M103', name: 'Industrial Safety Gear Kit', price: 150 },
+    { id: 'M104', name: 'Heavy Duty Packaging Box', price: 2.5 },
   ],
   costCenters: [
-    { id: '1000', name: 'IT Infrastructure' },
-    { id: '2000', name: 'Finance & Accounts' },
-    { id: '3000', name: 'Human Resources' },
-    { id: '4000', name: 'Marketing & Sales' },
+    { id: '1000', name: 'Manufacturing Unit' },
+    { id: '2000', name: 'General Administration' },
+    { id: '3000', name: 'Maintenance Dept' },
+    { id: '4000', name: 'Operations & Logistics' },
   ]
 };
 
