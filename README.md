@@ -83,7 +83,6 @@ This system simulates the core stages of procurement, providing users with a cle
 
 The project includes detailed documentation and SAP-related reference materials:
 -   `PROJECT DOCUMENTATION .pdf`: Technical overview and project scope.
--   `SAP.pdf`: Reference for P2P business processes.
 
 ## 📝 License
 
